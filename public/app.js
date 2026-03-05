@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Download Buttons Interaction
     downloadBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', async function () {
             const originalHtml = this.innerHTML;
             const quality = this.querySelector('.badge').textContent;
             const format = this.querySelector('span').textContent;
@@ -147,25 +147,41 @@ document.addEventListener('DOMContentLoaded', () => {
             this.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
             this.style.pointerEvents = 'none';
 
-            // 2. Fake processing delay
-            setTimeout(() => {
-                // 3. Trigger actual browser download (Mock Blob)
-                // In a real app, this would be the actual video/audio file URL
-                const dummyContent = `This is a mock ${format} file for: ${title} in ${quality}. To get the real video, connect this frontend to a TubeScraper API.`;
-                const blob = new Blob([dummyContent], { type: 'text/plain' });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${format.toLowerCase()}`;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
+            // 2. Mock delay to simulate backend processing
+            setTimeout(async () => {
+                try {
+                    // 3. Trigger actual browser download
+                    // We use a sample video/audio URL for demonstration so the user's gallery shows real media
+                    let demoUrl = 'https://www.w3schools.com/html/mov_bbb.mp4'; // Default stable sample video
+                    if (format === 'MP3') {
+                        demoUrl = 'https://www.w3schools.com/html/horse.mp3'; // Sample audio
+                    }
 
-                // 4. Show success notification visually on button
-                this.classList.add('success');
-                this.innerHTML = `<div class="btn-info"><span>Downloaded!</span></div><i class="fa-solid fa-check"></i>`;
+                    // Create a temporary link to trigger the download
+                    const response = await fetch(demoUrl);
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+
+                    const a = document.createElement('a');
+                    a.style.display = 'none';
+                    a.href = url;
+                    // Setting correct extension ensures mobile gallery recognition
+                    const extension = format === 'MP3' ? 'mp3' : 'mp4';
+                    a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${extension}`;
+
+                    document.body.appendChild(a);
+                    a.click();
+
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+
+                    // 4. Show success notification
+                    this.classList.add('success');
+                    this.innerHTML = `<div class="btn-info"><span>Saved to Gallery!</span></div><i class="fa-solid fa-check"></i>`;
+                } catch (error) {
+                    console.error("Download failed:", error);
+                    this.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
+                }
 
                 // 5. Reset button after 3 seconds
                 setTimeout(() => {
