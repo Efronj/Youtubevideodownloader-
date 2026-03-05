@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoDuration = document.getElementById('video-duration');
     const downloadBtns = document.querySelectorAll('.download-btn');
 
-    const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.be)\/.+$/;
+    const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.be|youtube\.com)\/.+$/;
+    const API_KEY = "AIzaSyA-v0Jh4AI2I_rhzMro8wuBKOlNk18teqE";
 
     pasteBtn.addEventListener('click', async () => {
         try {
@@ -64,40 +65,76 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function extractVideoId(url) {
-        let videoId = 'dQw4w9WgXcQ';
+        let videoId = null;
         try {
             if (url.includes('youtu.be/')) {
                 videoId = url.split('youtu.be/')[1].split('?')[0];
             } else if (url.includes('v=')) {
                 videoId = url.split('v=')[1].split('&')[0];
+            } else if (url.includes('embed/')) {
+                videoId = url.split('embed/')[1].split('?')[0];
             }
         } catch (e) { }
         return videoId;
     }
 
-    function processUrl(url) {
+    function parseDuration(duration) {
+        const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        const hours = (parseInt(match[1]) || 0);
+        const minutes = (parseInt(match[2]) || 0);
+        const seconds = (parseInt(match[3]) || 0);
+
+        let result = "";
+        if (hours > 0) result += hours + ":";
+        result += (minutes < 10 && hours > 0 ? "0" : "") + minutes + ":";
+        result += (seconds < 10 ? "0" : "") + seconds;
+        return result;
+    }
+
+    async function processUrl(url) {
         errorMsg.classList.add('hidden');
         downloaderResult.classList.add('hidden');
-        if (!url || !youtubeRegex.test(url)) {
+
+        const videoId = extractVideoId(url);
+        if (!url || !videoId) {
             if (url) errorMsg.classList.remove('hidden');
             return;
         }
 
         loadingState.classList.remove('hidden');
         featuresSection.classList.add('hidden');
-        const videoId = extractVideoId(url);
 
-        setTimeout(() => {
+        try {
+            const apiRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`);
+            const data = await apiRes.json();
+
             loadingState.classList.add('hidden');
-            videoThumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-            videoTitle.textContent = "How to Download Premium High Quality YouTube Videos (2026 Tutorial)";
-            videoDuration.textContent = "10:24";
-            videoThumbnail.onerror = function () {
-                this.onerror = null;
-                this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-            };
-            downloaderResult.classList.remove('hidden');
-        }, 1500);
+
+            if (data.items && data.items.length > 0) {
+                const video = data.items[0];
+                const snippet = video.snippet;
+                const details = video.contentDetails;
+
+                // Set Real Data
+                videoTitle.textContent = snippet.title;
+                videoDuration.textContent = parseDuration(details.duration);
+
+                // Get highest possible thumbnail
+                const thumbs = snippet.thumbnails;
+                const bestThumb = thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium;
+                videoThumbnail.src = bestThumb.url;
+
+                downloaderResult.classList.remove('hidden');
+            } else {
+                errorMsg.classList.remove('hidden');
+                featuresSection.classList.remove('hidden');
+            }
+        } catch (err) {
+            console.error("API Fetch Error:", err);
+            loadingState.classList.add('hidden');
+            errorMsg.classList.remove('hidden');
+            featuresSection.classList.remove('hidden');
+        }
     }
 
     downloadBtns.forEach(btn => {
