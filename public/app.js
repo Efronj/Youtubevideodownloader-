@@ -7,10 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
             const targetId = link.getAttribute('data-target');
-
             navLinks.forEach(l => l.classList.remove('active'));
             link.classList.add('active');
-
             sections.forEach(sec => {
                 if (sec.id === targetId) {
                     sec.classList.remove('hidden');
@@ -45,12 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = await navigator.clipboard.readText();
             if (text) {
                 urlInput.value = text;
-                if (youtubeRegex.test(text)) {
-                    processUrl(text);
-                }
+                if (youtubeRegex.test(text)) processUrl(text);
             }
         } catch (err) {
-            console.error('Failed to read clipboard: ', err);
+            console.error('Clipboard error:', err);
             alert("Clipboard permission denied. Please manually paste.");
         }
     });
@@ -67,13 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function extractVideoId(url) {
         let videoId = null;
         try {
-            if (url.includes('youtu.be/')) {
-                videoId = url.split('youtu.be/')[1].split('?')[0];
-            } else if (url.includes('v=')) {
-                videoId = url.split('v=')[1].split('&')[0];
-            } else if (url.includes('embed/')) {
-                videoId = url.split('embed/')[1].split('?')[0];
-            }
+            if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
+            else if (url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
+            else if (url.includes('embed/')) videoId = url.split('embed/')[1].split('?')[0];
         } catch (e) { }
         return videoId;
     }
@@ -83,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const hours = (parseInt(match[1]) || 0);
         const minutes = (parseInt(match[2]) || 0);
         const seconds = (parseInt(match[3]) || 0);
-
         let result = "";
         if (hours > 0) result += hours + ":";
         result += (minutes < 10 && hours > 0 ? "0" : "") + minutes + ":";
@@ -94,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function processUrl(url) {
         errorMsg.classList.add('hidden');
         downloaderResult.classList.add('hidden');
-
         const videoId = extractVideoId(url);
         if (!url || !videoId) {
             if (url) errorMsg.classList.remove('hidden');
@@ -107,30 +97,21 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const apiRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${API_KEY}`);
             const data = await apiRes.json();
-
             loadingState.classList.add('hidden');
 
             if (data.items && data.items.length > 0) {
                 const video = data.items[0];
-                const snippet = video.snippet;
-                const details = video.contentDetails;
-
-                // Set Real Data
-                videoTitle.textContent = snippet.title;
-                videoDuration.textContent = parseDuration(details.duration);
-
-                // Get highest possible thumbnail
-                const thumbs = snippet.thumbnails;
-                const bestThumb = thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium;
-                videoThumbnail.src = bestThumb.url;
-
+                videoTitle.textContent = video.snippet.title;
+                videoDuration.textContent = parseDuration(video.contentDetails.duration);
+                const thumbs = video.snippet.thumbnails;
+                videoThumbnail.src = (thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium).url;
                 downloaderResult.classList.remove('hidden');
             } else {
                 errorMsg.classList.remove('hidden');
                 featuresSection.classList.remove('hidden');
             }
         } catch (err) {
-            console.error("API Fetch Error:", err);
+            console.error("API Error:", err);
             loadingState.classList.add('hidden');
             errorMsg.classList.remove('hidden');
             featuresSection.classList.remove('hidden');
@@ -139,32 +120,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     downloadBtns.forEach(btn => {
         btn.addEventListener('click', function () {
-            const originalHtml = this.innerHTML;
-            const quality = this.querySelector('.badge').textContent;
-            const format = this.querySelector('span').textContent;
+            const originalHtml = btn.innerHTML;
+            const quality = btn.querySelector('.badge').textContent;
+            const format = btn.querySelector('span').textContent;
             const title = videoTitle.textContent || "video";
 
-            this.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
-            this.style.pointerEvents = 'none';
+            btn.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
+            btn.style.pointerEvents = 'none';
 
             setTimeout(() => {
                 try {
-                    let base64;
-                    let mimeType;
+                    let mimeType = format === 'MP3' ? 'audio/mpeg' : 'video/mp4';
                     let extension = format.toLowerCase();
-
-                    if (format === 'MP3') {
-                        // Real-ish minimal 1s silent MP3 base64
-                        base64 = "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZTU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-                        mimeType = 'audio/mpeg';
-                    } else {
-                        // Real-ish minimal 1s black MP4 base64
-                        base64 = "AAAAIGZ0eXBpc29tAAAAAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAtpZGF0AAAAAA==";
-                        mimeType = 'video/mp4';
-                    }
-
-                    // Direct Data URI is more stable for tiny mock files
-                    const url = `data:${mimeType};base64,${base64}`;
+                    const dummyBytes = new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112, 105, 115, 111, 109]);
+                    const blob = new Blob([dummyBytes], { type: mimeType });
+                    const url = window.URL.createObjectURL(blob);
 
                     const a = document.createElement('a');
                     a.style.display = 'none';
@@ -172,25 +142,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${extension}`;
                     document.body.appendChild(a);
                     a.click();
-                    document.body.removeChild(a);
 
-                    this.classList.add('success');
-                    this.innerHTML = `<div class="btn-info"><span>Saved to Gallery!</span></div><i class="fa-solid fa-check"></i>`;
+                    setTimeout(() => {
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                    }, 500);
+
+                    btn.classList.add('success');
+                    btn.innerHTML = `<div class="btn-info"><span>Success!</span></div><i class="fa-solid fa-check"></i>`;
                 } catch (error) {
-                    console.error("Download failed:", error);
-                    this.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
+                    console.error("Download fail:", error);
+                    btn.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
                 }
 
                 setTimeout(() => {
-                    this.classList.remove('success');
-                    this.innerHTML = originalHtml;
-                    this.style.pointerEvents = 'auto';
+                    btn.classList.remove('success');
+                    btn.innerHTML = originalHtml;
+                    btn.style.pointerEvents = 'auto';
                 }, 3000);
-            }, 2000);
+            }, 1000);
         });
     });
 
-    // Efron Popup Logic
     const efronTrigger = document.getElementById('efron-trigger');
     const efronModal = document.getElementById('efron-modal');
     const closeModal = document.querySelector('.close-modal');

@@ -190,6 +190,7 @@ body {
     text-align: center;
     margin-top: 4rem;
     margin-bottom: 4rem;
+    px: 1rem;
 }
 
 .hero h1 {
@@ -213,6 +214,8 @@ body {
     padding: 0.5rem;
     border-radius: var(--card-radius);
     transition: var(--transition);
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
 }
 
 .search-container:focus-within {
@@ -270,6 +273,7 @@ body {
     border-top-color: var(--primary-color);
     border-radius: 50%;
     animation: spin 1s linear infinite;
+    margin: 2rem auto;
 }
 
 @keyframes spin {
@@ -284,6 +288,20 @@ body {
     border-radius: var(--card-radius);
     overflow: hidden;
     animation: fadeIn 0.5s ease;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .result-content {
@@ -305,6 +323,7 @@ body {
     border-radius: 16px;
     overflow: hidden;
     aspect-ratio: 16/9;
+    background: #000;
 }
 
 #video-thumbnail {
@@ -315,13 +334,15 @@ body {
 
 .download-options {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .options-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 1rem;
-    margin-top: 1rem;
 }
 
 .download-btn {
@@ -340,6 +361,7 @@ body {
 .download-btn:hover {
     background: var(--primary-color);
     transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
 }
 
 .download-btn.success {
@@ -360,6 +382,12 @@ body {
     border-radius: var(--card-radius);
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
+    transition: var(--transition);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
 }
 
 .glass-footer {
@@ -367,28 +395,20 @@ body {
     padding: 2rem;
     border-top: 1px solid var(--glass-border);
     margin-top: auto;
+    backdrop-filter: blur(10px);
 }
 
-/* --- Mobile Improvements --- */
+/* --- Mobile Fixes --- */
 @media (max-width: 768px) {
     .container {
         padding: 1rem;
-    }
-
-    .hero {
-        margin-top: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .hero h1 {
-        font-size: 2.2rem;
-        line-height: 1.2;
     }
 
     .navbar {
         margin: 0.5rem;
         padding: 0.75rem 1rem;
         border-radius: 16px;
+        top: 0.5rem;
     }
 
     .logo {
@@ -399,20 +419,22 @@ body {
         height: 24px;
     }
 
-    .nav-links {
-        gap: 0.5rem;
+    .hero {
+        margin: 2rem 0;
     }
 
-    .nav-link {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.85rem;
+    .hero h1 {
+        font-size: 2.2rem;
+        line-height: 1.2;
+        padding: 0 10px;
     }
 
     .search-container {
         flex-direction: column;
         padding: 1rem;
         gap: 1rem;
-        margin: 0 5px;
+        margin: 0 10px;
+        width: calc(100% - 20px);
     }
 
     .input-wrapper {
@@ -424,7 +446,6 @@ body {
     .primary-btn {
         width: 100%;
         justify-content: center;
-        padding: 1.1rem;
     }
 
     .result-content {
@@ -435,15 +456,11 @@ body {
     .thumbnail-container {
         width: 100%;
         margin-bottom: 1rem;
+        flex: none;
     }
 
     .options-grid {
         grid-template-columns: 1fr;
-    }
-
-    .features-section {
-        grid-template-columns: 1fr;
-        gap: 1rem;
     }
 }
 
@@ -455,9 +472,18 @@ body {
     .logo span {
         display: none;
     }
+
+    .nav-links {
+        gap: 0.5rem;
+    }
+
+    .nav-link {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
 }
 
-/* --- Efron Styles --- */
+/* --- Branding Animations --- */
 .efron-glow-text {
     cursor: pointer;
     font-weight: 800;
@@ -516,6 +542,7 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: 0.3s;
+    backdrop-filter: blur(5px);
 }
 
 .modal.active {
@@ -526,7 +553,7 @@ body {
 .modal-content {
     background: white;
     color: #0b0b14;
-    padding: 2rem;
+    padding: 2.5rem;
     border-radius: 24px;
     text-align: center;
     max-width: 400px;
@@ -542,5 +569,8 @@ body {
 .close-modal {
     cursor: pointer;
     float: right;
-    font-size: 1.5rem;
+    font-size: 2rem;
+    line-height: 1;
+    margin-top: -1rem;
+    margin-right: -1rem;
 }
