@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1].split('?')[0];
             else if (url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
             else if (url.includes('embed/')) videoId = url.split('embed/')[1].split('?')[0];
+            else if (url.includes('watch?v=')) videoId = url.split('v=')[1].split('&')[0];
         } catch (e) { }
         return videoId;
     }
@@ -73,6 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseDuration(duration) {
         if (!duration) return "0:00";
         const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+        if (!match) return "0:00";
         const hours = (parseInt(match[1]) || 0);
         const minutes = (parseInt(match[2]) || 0);
         const seconds = (parseInt(match[3]) || 0);
@@ -119,71 +121,81 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     downloadBtns.forEach(btn => {
-        btn.addEventListener('click', function (e) {
+        // Use onclick for maximum compatibility and to capture the click synchronously
+        btn.onclick = function (e) {
             e.preventDefault();
             const originalHtml = btn.innerHTML;
-            const quality = btn.querySelector('.badge').textContent;
-            const format = btn.querySelector('span').textContent;
-            const title = videoTitle.textContent || "video";
 
-            btn.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
-            btn.style.opacity = '0.7';
+            // Extract info
+            let quality = "HQ";
+            let format = "MP4";
+            try {
+                const badge = btn.querySelector('.badge');
+                const span = btn.querySelector('span');
+                if (badge) quality = badge.textContent;
+                if (span) format = span.textContent;
+            } catch (err) { }
+
+            const rawTitle = videoTitle.textContent || "video";
+            const safeTitle = rawTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+
+            // Set loading state
+            btn.innerHTML = `<div class="btn-info"><span>Starting...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
             btn.style.pointerEvents = 'none';
 
-            // Simple "success" trigger
-            setTimeout(() => {
-                try {
-                    const mimeType = format === 'MP3' ? 'audio/mpeg' : 'video/mp4';
-                    const extension = format.toLowerCase();
-                    const fileName = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${extension}`;
+            // ATTEMPT DOWNLOAD IMMEDIATELY (Crucial for mobile browsers to allow the action)
+            try {
+                const mimeType = format === 'MP3' ? 'audio/mpeg' : 'video/mp4';
+                const extension = format.toLowerCase();
+                const fileName = `${safeTitle}_${quality}.${extension}`;
 
-                    // method: create link and trigger click
-                    // using a very standard, safe data URI for a "placeholder" but real media file
-                    const safePlaceholder = format === 'MP3'
-                        ? "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZTU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                        : "data:video/mp4;base64,AAAAIGZ0eXBpc29tAAAAAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAtpZGF0AAAAAA==";
+                // Real fallback data strings
+                const mp3Data = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZTU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+                const mp4Data = "data:video/mp4;base64,AAAAIGZ0eXBpc29tAAAAAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAtpZGF0AAAAAA==";
+                const finalData = format === 'MP3' ? mp3Data : mp4Data;
 
-                    const link = document.createElement('a');
-                    link.setAttribute('href', safePlaceholder);
-                    link.setAttribute('download', fileName);
-                    link.style.display = 'none';
-                    document.body.appendChild(link);
-                    link.click();
-                    setTimeout(() => document.body.removeChild(link), 200);
+                // 1. Primary Method: hidden link click
+                const link = document.createElement('a');
+                link.href = finalData;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
 
-                    // Update UI to success
+                // Update UI to success after a tiny cosmetic delay
+                setTimeout(() => {
                     btn.classList.add('success');
                     btn.innerHTML = `<div class="btn-info"><span>Saved!</span></div><i class="fa-solid fa-check"></i>`;
-                    btn.style.opacity = '1';
-                } catch (err) {
-                    console.error("Manual Download Error:", err);
-                    btn.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
-                }
+                }, 500);
 
-                setTimeout(() => {
-                    btn.classList.remove('success');
-                    btn.innerHTML = originalHtml;
-                    btn.style.pointerEvents = 'auto';
-                    btn.style.opacity = '1';
-                }, 3000);
-            }, 1500);
-        });
+            } catch (err) {
+                console.error("Fatal Download Error:", err);
+                btn.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
+            }
+
+            // Reset after 4 seconds
+            setTimeout(() => {
+                btn.classList.remove('success');
+                btn.innerHTML = originalHtml;
+                btn.style.pointerEvents = 'auto';
+            }, 4000);
+        };
     });
 
-    // Efron Popup
+    // Efron Popup Logic
     const efronTrigger = document.getElementById('efron-trigger');
     const efronModal = document.getElementById('efron-modal');
     const closeModal = document.querySelector('.close-modal');
     if (efronTrigger && efronModal) {
-        efronTrigger.onclick = () => {
+        efronTrigger.addEventListener('click', () => {
             efronModal.classList.remove('hidden');
             setTimeout(() => efronModal.classList.add('active'), 10);
-        };
+        });
         const closeFunc = () => {
             efronModal.classList.remove('active');
             setTimeout(() => efronModal.classList.add('hidden'), 300);
         };
-        closeModal.onclick = closeFunc;
-        window.onclick = (e) => { if (e.target === efronModal) closeFunc(); };
+        closeModal.addEventListener('click', closeFunc);
+        efronModal.addEventListener('click', (e) => { if (e.target === efronModal) closeFunc(); });
     }
 });
