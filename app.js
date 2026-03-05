@@ -163,5 +163,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             }, 2000);
         });
+
+        // Efron Popup Logic
+        const efronTrigger = document.getElementById('efron-trigger');
+        const efronModal = document.getElementById('efron-modal');
+        const closeModal = document.querySelector('.close-modal');
+
+        if (efronTrigger && efronModal) {
+            efronTrigger.addEventListener('click', () => {
+                efronModal.classList.remove('hidden');
+                setTimeout(() => efronModal.classList.add('active'), 10);
+            });
+
+            const closeFunc = () => {
+                efronModal.classList.remove('active');
+                setTimeout(() => efronModal.classList.add('hidden'), 300);
+            };
+
+            closeModal.addEventListener('click', closeFunc);
+
+            // Close on background click
+            efronModal.addEventListener('click', (e) => {
+                if (e.target === efronModal) {
+                    closeFunc();
+                }
+            });
+        }
     });
-});
