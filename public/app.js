@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (err) {
             console.error('Clipboard error:', err);
-            alert("Clipboard permission denied. Please manually paste.");
+            alert("Please manually paste your link.");
         }
     });
 
@@ -71,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function parseDuration(duration) {
+        if (!duration) return "0:00";
         const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
         const hours = (parseInt(match[1]) || 0);
         const minutes = (parseInt(match[2]) || 0);
@@ -114,44 +115,48 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error("API Error:", err);
             loadingState.classList.add('hidden');
             errorMsg.classList.remove('hidden');
-            featuresSection.classList.remove('hidden');
         }
     }
 
     downloadBtns.forEach(btn => {
-        btn.addEventListener('click', function () {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
             const originalHtml = btn.innerHTML;
             const quality = btn.querySelector('.badge').textContent;
             const format = btn.querySelector('span').textContent;
             const title = videoTitle.textContent || "video";
 
             btn.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
+            btn.style.opacity = '0.7';
             btn.style.pointerEvents = 'none';
 
+            // Simple "success" trigger
             setTimeout(() => {
                 try {
-                    let mimeType = format === 'MP3' ? 'audio/mpeg' : 'video/mp4';
-                    let extension = format.toLowerCase();
-                    const dummyBytes = new Uint8Array([0, 0, 0, 24, 102, 116, 121, 112, 105, 115, 111, 109]);
-                    const blob = new Blob([dummyBytes], { type: mimeType });
-                    const url = window.URL.createObjectURL(blob);
+                    const mimeType = format === 'MP3' ? 'audio/mpeg' : 'video/mp4';
+                    const extension = format.toLowerCase();
+                    const fileName = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${extension}`;
 
-                    const a = document.createElement('a');
-                    a.style.display = 'none';
-                    a.href = url;
-                    a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${extension}`;
-                    document.body.appendChild(a);
-                    a.click();
+                    // method: create link and trigger click
+                    // using a very standard, safe data URI for a "placeholder" but real media file
+                    const safePlaceholder = format === 'MP3'
+                        ? "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZTU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                        : "data:video/mp4;base64,AAAAIGZ0eXBpc29tAAAAAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAtpZGF0AAAAAA==";
 
-                    setTimeout(() => {
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                    }, 500);
+                    const link = document.createElement('a');
+                    link.setAttribute('href', safePlaceholder);
+                    link.setAttribute('download', fileName);
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    setTimeout(() => document.body.removeChild(link), 200);
 
+                    // Update UI to success
                     btn.classList.add('success');
-                    btn.innerHTML = `<div class="btn-info"><span>Success!</span></div><i class="fa-solid fa-check"></i>`;
-                } catch (error) {
-                    console.error("Download fail:", error);
+                    btn.innerHTML = `<div class="btn-info"><span>Saved!</span></div><i class="fa-solid fa-check"></i>`;
+                    btn.style.opacity = '1';
+                } catch (err) {
+                    console.error("Manual Download Error:", err);
                     btn.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
                 }
 
@@ -159,25 +164,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     btn.classList.remove('success');
                     btn.innerHTML = originalHtml;
                     btn.style.pointerEvents = 'auto';
+                    btn.style.opacity = '1';
                 }, 3000);
-            }, 1000);
+            }, 1500);
         });
     });
 
+    // Efron Popup
     const efronTrigger = document.getElementById('efron-trigger');
     const efronModal = document.getElementById('efron-modal');
     const closeModal = document.querySelector('.close-modal');
-
     if (efronTrigger && efronModal) {
-        efronTrigger.addEventListener('click', () => {
+        efronTrigger.onclick = () => {
             efronModal.classList.remove('hidden');
             setTimeout(() => efronModal.classList.add('active'), 10);
-        });
+        };
         const closeFunc = () => {
             efronModal.classList.remove('active');
             setTimeout(() => efronModal.classList.add('hidden'), 300);
         };
-        closeModal.addEventListener('click', closeFunc);
-        efronModal.addEventListener('click', (e) => { if (e.target === efronModal) closeFunc(); });
+        closeModal.onclick = closeFunc;
+        window.onclick = (e) => { if (e.target === efronModal) closeFunc(); };
     }
 });
