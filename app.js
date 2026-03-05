@@ -1,0 +1,167 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // Navigation Logic
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.page-section');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('data-target');
+
+            navLinks.forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+
+            sections.forEach(sec => {
+                if (sec.id === targetId) {
+                    sec.classList.remove('hidden');
+                    // Small delay to allow display flow to apply before opacity transitions if active class handles opacity
+                    setTimeout(() => sec.classList.add('active'), 10);
+                } else {
+                    sec.classList.remove('active');
+                    sec.classList.add('hidden');
+                }
+            });
+        });
+    });
+
+    // YouTube Downloader Logic
+    const urlInput = document.getElementById('url-input');
+    const pasteBtn = document.getElementById('paste-btn');
+    const fetchBtn = document.getElementById('fetch-btn');
+    const errorMsg = document.getElementById('error-message');
+    const loadingState = document.getElementById('loading');
+    const downloaderResult = document.getElementById('downloader-result');
+    const featuresSection = document.querySelector('.features-section');
+
+    // Result DOM Elements
+    const videoThumbnail = document.getElementById('video-thumbnail');
+    const videoTitle = document.getElementById('video-title');
+    const videoDuration = document.getElementById('video-duration');
+    const downloadBtns = document.querySelectorAll('.download-btn');
+
+    // Simple Regex for YouTube URLs
+    const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.be)\/.+$/;
+
+    // Paste Button Functional
+    pasteBtn.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (text) {
+                urlInput.value = text;
+                // Auto-fetch if it looks like a YouTube URL
+                if (youtubeRegex.test(text)) {
+                    processUrl(text);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to read clipboard contents: ', err);
+            // Fallback for browsers stopping automatic clipboard read
+            alert("Clipboard permission denied or unavailable. Please manually paste.");
+        }
+    });
+
+    fetchBtn.addEventListener('click', () => {
+        processUrl(urlInput.value.trim());
+    });
+
+    urlInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            processUrl(urlInput.value.trim());
+        }
+    });
+
+    urlInput.addEventListener('input', () => {
+        // Auto-detect valid links when user pastes them manually
+        const url = urlInput.value.trim();
+        if (youtubeRegex.test(url)) {
+            processUrl(url);
+        }
+    });
+
+    function extractVideoId(url) {
+        let videoId = 'dQw4w9WgXcQ'; // Default Rickroll fallback
+        try {
+            if (url.includes('youtu.be/')) {
+                videoId = url.split('youtu.be/')[1].split('?')[0];
+            } else if (url.includes('v=')) {
+                videoId = url.split('v=')[1].split('&')[0];
+            }
+        } catch (e) {
+            console.warn("Failed to extract ID, using fallback");
+        }
+        return videoId;
+    }
+
+    function processUrl(url) {
+        // Reset visually
+        errorMsg.classList.add('hidden');
+        downloaderResult.classList.add('hidden');
+
+        if (!url) return;
+
+        if (!youtubeRegex.test(url)) {
+            errorMsg.classList.remove('hidden');
+            return;
+        }
+
+        // It's a valid matching URL. Show loading.
+        loadingState.classList.remove('hidden');
+
+        // Hide features to focus entirely on downloader
+        featuresSection.classList.add('hidden');
+
+        // MOCKED API FETCH FOR DEMONSTRATION
+        // In a real application, you would pass the URL to your backend
+        // e.g. /api/download?url=YOUR_URL
+        const videoId = extractVideoId(url);
+
+        // Simulate network latency (1.5 seconds)
+        setTimeout(() => {
+            // Hide loading
+            loadingState.classList.add('hidden');
+
+            // Populate mock data with real-looking YouTube thumbnail
+            videoThumbnail.src = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+            videoTitle.textContent = "How to Download Premium High Quality YouTube Videos (2026 Tutorial)";
+            videoDuration.textContent = "10:24";
+
+            // If the maxresdefault thumbnail fails to load (some videos don't have 1080p thumbs), fallback to mqdefault
+            videoThumbnail.onerror = function () {
+                this.onerror = null;
+                this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`; // Medium quality, always exists
+            };
+
+            // Show result
+            downloaderResult.classList.remove('hidden');
+        }, 1500);
+    }
+
+    // Download Buttons Interaction
+    downloadBtns.forEach(btn => {
+        btn.addEventListener('click', function () {
+            const originalHtml = this.innerHTML;
+
+            // 1. Show processing state
+            this.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
+            this.style.pointerEvents = 'none';
+
+            // 2. Fake processing delay
+            setTimeout(() => {
+                // 3. Show success notification visually on button
+                this.classList.add('success');
+                this.innerHTML = `<div class="btn-info"><span>Ready!</span></div><i class="fa-solid fa-check"></i>`;
+
+                // Note: Normally here you would trigger a real `window.open` or element download
+                // e.g., window.location.href = data.downloadUrl;
+
+                // 4. Reset button after 3 seconds
+                setTimeout(() => {
+                    this.classList.remove('success');
+                    this.innerHTML = originalHtml;
+                    this.style.pointerEvents = 'auto';
+                }, 3000);
+
+            }, 2000);
+        });
+    });
+});
