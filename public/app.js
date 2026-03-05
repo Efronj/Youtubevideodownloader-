@@ -33,9 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoThumbnail = document.getElementById('video-thumbnail');
     const videoTitle = document.getElementById('video-title');
     const videoDuration = document.getElementById('video-duration');
-    const downloadBtns = document.querySelectorAll('.download-btn');
 
-    // Real Download Engine Container (we'll inject the real API buttons here)
+    // Target Container for Download Buttons
     const downloadOptions = document.querySelector('.download-options');
 
     const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.be|youtube\.com|m\.youtube\.com|youtube\.com\/shorts\/)\/.+$/;
@@ -108,12 +107,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const thumbs = video.snippet.thumbnails;
                 videoThumbnail.src = (thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium).url;
 
-                // INJECT REAL DOWNLOAD BUTTONS (REAL-TIME CONVERSION)
+                // INJECT NEW-GENERATION MULTI-SOURCE DOWNLOADER (Reliable and Fast)
                 downloadOptions.innerHTML = `
-                    <h3><i class="fa-solid fa-download"></i> Choose Real Quality</h3>
-                    <div style="margin-top: 1rem; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.05); padding: 5px;">
-                        <iframe id="dl-iframe" src="https://api.vevioz.com/@api/button/videos/${videoId}" 
-                                style="width: 100%; height: 400px; border: none; background: transparent;"
+                    <h3><i class="fa-solid fa-download"></i> Ready to Download</h3>
+                    <div style="margin-top: 1rem; border-radius: 20px; overflow: hidden; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 5px;">
+                        <iframe id="dl-iframe" 
+                                src="https://y2mate.is/iframe/#${videoId}"
+                                style="width: 100%; height: 450px; border: none; background: #000;"
                                 scrolling="yes"></iframe>
                     </div>
                 `;
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Modal Control
+    // Modal
     const efronTrigger = document.getElementById('efron-trigger');
     const efronModal = document.getElementById('efron-modal');
     const closeModal = document.querySelector('.close-modal');
