@@ -139,6 +139,9 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadBtns.forEach(btn => {
         btn.addEventListener('click', function () {
             const originalHtml = this.innerHTML;
+            const quality = this.querySelector('.badge').textContent;
+            const format = this.querySelector('span').textContent;
+            const title = videoTitle.textContent || "video";
 
             // 1. Show processing state
             this.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
@@ -146,11 +149,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 2. Fake processing delay
             setTimeout(() => {
-                // 3. Show success notification visually on button
-                this.classList.add('success');
-                this.innerHTML = `<div class="btn-info"><span>Ready!</span></div><i class="fa-solid fa-check"></i>`;
+                // 3. Trigger actual browser download (Mock Blob)
+                // In a real app, this would be the actual video/audio file URL
+                const dummyContent = `This is a mock ${format} file for: ${title} in ${quality}. To get the real video, connect this frontend to a TubeScraper API.`;
+                const blob = new Blob([dummyContent], { type: 'text/plain' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${format.toLowerCase()}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
 
-                // 4. Reset button after 3 seconds
+                // 4. Show success notification visually on button
+                this.classList.add('success');
+                this.innerHTML = `<div class="btn-info"><span>Downloaded!</span></div><i class="fa-solid fa-check"></i>`;
+
+                // 5. Reset button after 3 seconds
                 setTimeout(() => {
                     this.classList.remove('success');
                     this.innerHTML = originalHtml;

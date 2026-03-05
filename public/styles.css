@@ -439,6 +439,8 @@ body {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
+    line-clamp: 2;
+    /* Standard property */
     overflow: hidden;
 }
 
@@ -611,16 +613,6 @@ body {
     font-weight: 500;
 }
 
-.footer-glow {
-    font-weight: 800;
-    background: var(--glow-rgb);
-    background-size: 200% auto;
-    color: transparent;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: var(--glow-animation);
-}
-
 /* --- Responsive Layout --- */
 @media (max-width: 768px) {
     .hero h1 {
@@ -655,19 +647,62 @@ body {
     }
 }
 
-/* --- Efron Popup Styling --- */
-.efron-text {
+/* --- Efron Letter Glow Styling --- */
+.efron-glow-text {
     cursor: pointer;
-    font-weight: 700;
-    text-decoration: underline;
-    text-underline-offset: 4px;
-    color: var(--text-color);
-    transition: var(--transition);
+    font-weight: 800;
+    display: inline-flex;
+    gap: 2px;
 }
 
-.efron-text:hover {
-    color: var(--primary-color);
-    text-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+.efron-glow-text span {
+    display: inline-block;
+    color: var(--text-color);
+    transition: var(--transition);
+    animation: letter-glow 3s infinite;
+}
+
+/* Sequential animation delays for each letter */
+.efron-glow-text span:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.efron-glow-text span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.efron-glow-text span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.efron-glow-text span:nth-child(4) {
+    animation-delay: 0.6s;
+}
+
+.efron-glow-text span:nth-child(5) {
+    animation-delay: 0.8s;
+}
+
+@keyframes letter-glow {
+
+    0%,
+    100% {
+        color: var(--text-color);
+        text-shadow: none;
+        transform: translateY(0);
+    }
+
+    50% {
+        color: var(--primary-color);
+        text-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-color);
+        transform: translateY(-5px);
+    }
+}
+
+.efron-glow-text:hover span {
+    animation-play-state: paused;
+    color: var(--accent-color);
+    text-shadow: 0 0 20px var(--accent-color);
 }
 
 .modal {
@@ -728,6 +763,8 @@ body {
     margin-bottom: 1.5rem;
     background: linear-gradient(135deg, #8b5cf6, #ec4899);
     -webkit-background-clip: text;
+    background-clip: text;
+    /* Standard property */
     -webkit-text-fill-color: transparent;
 }
 
