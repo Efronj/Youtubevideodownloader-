@@ -35,6 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const videoDuration = document.getElementById('video-duration');
     const downloadBtns = document.querySelectorAll('.download-btn');
 
+    // Real Download Engine Container (we'll inject the real API buttons here)
+    const downloadOptions = document.querySelector('.download-options');
+
     const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.be|youtube\.com|m\.youtube\.com|youtube\.com\/shorts\/)\/.+$/;
     const API_KEY = "AIzaSyA-v0Jh4AI2I_rhzMro8wuBKOlNk18teqE";
 
@@ -45,9 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 urlInput.value = text;
                 if (youtubeRegex.test(text)) processUrl(text);
             }
-        } catch (err) {
-            console.error('Clipboard access denied');
-        }
+        } catch (err) { }
     });
 
     fetchBtn.onclick = () => processUrl(urlInput.value.trim());
@@ -106,6 +107,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 videoDuration.textContent = parseDuration(video.contentDetails.duration);
                 const thumbs = video.snippet.thumbnails;
                 videoThumbnail.src = (thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium).url;
+
+                // INJECT REAL DOWNLOAD BUTTONS (REAL-TIME CONVERSION)
+                downloadOptions.innerHTML = `
+                    <h3><i class="fa-solid fa-download"></i> Choose Real Quality</h3>
+                    <div style="margin-top: 1rem; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,0.05); padding: 5px;">
+                        <iframe id="dl-iframe" src="https://api.vevioz.com/@api/button/videos/${videoId}" 
+                                style="width: 100%; height: 400px; border: none; background: transparent;"
+                                scrolling="yes"></iframe>
+                    </div>
+                `;
+
                 downloaderResult.classList.remove('hidden');
             } else {
                 errorMsg.classList.remove('hidden');
@@ -117,56 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // THE FINAL ULTIMATE FIX FOR PLAYABLE DOWNLOADS (Supports Android/Windows)
-    function runPerfectDownload(format, quality, title) {
-        // We point directly to a REAL playable local file to ensure 0 error codes on OS
-        const fileSrc = (format === 'MP3') ? 'sample.mp3' : 'sample.mp4';
-        const fileName = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality.toLowerCase()}.${format.toLowerCase()}`;
-
-        const link = document.createElement('a');
-        link.href = fileSrc;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        return true;
-    }
-
-    downloadBtns.forEach(btn => {
-        btn.onclick = function () {
-            const originalHtml = btn.innerHTML;
-            const qualityNode = btn.querySelector('.badge');
-            const formatNode = btn.querySelector('span');
-
-            const quality = qualityNode ? qualityNode.textContent : "HD";
-            const format = formatNode ? formatNode.textContent : "MP4";
-            const title = videoTitle.textContent || "video";
-
-            // Processing feedback
-            btn.innerHTML = `<div class="btn-info"><span>Processing...</span></div><i class="fa-solid fa-spinner fa-spin"></i>`;
-            btn.style.pointerEvents = 'none';
-
-            // UX Delay
-            setTimeout(() => {
-                const success = runPerfectDownload(format, quality, title);
-
-                if (success) {
-                    btn.classList.add('success');
-                    btn.innerHTML = `<div class="btn-info"><span>Saved!</span></div><i class="fa-solid fa-check"></i>`;
-                } else {
-                    btn.innerHTML = `<div class="btn-info"><span>Failed</span></div><i class="fa-solid fa-xmark"></i>`;
-                }
-
-                setTimeout(() => {
-                    btn.classList.remove('success');
-                    btn.innerHTML = originalHtml;
-                    btn.style.pointerEvents = 'auto';
-                }, 3000);
-            }, 800);
-        };
-    });
-
-    // Branding Modal
+    // Modal Control
     const efronTrigger = document.getElementById('efron-trigger');
     const efronModal = document.getElementById('efron-modal');
     const closeModal = document.querySelector('.close-modal');
