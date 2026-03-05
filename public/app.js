@@ -154,21 +154,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     let extension = format.toLowerCase();
 
                     if (format === 'MP3') {
-                        base64 = "SUQzBAAAAAAAF1RFTkMAAAAMAAADU283bmFyIDguMAA=";
+                        // Real-ish minimal 1s silent MP3 base64
+                        base64 = "SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZTU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
                         mimeType = 'audio/mpeg';
                     } else {
+                        // Real-ish minimal 1s black MP4 base64
                         base64 = "AAAAIGZ0eXBpc29tAAAAAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAAtpZGF0AAAAAA==";
                         mimeType = 'video/mp4';
                     }
 
-                    const byteCharacters = atob(base64);
-                    const byteNumbers = new Array(byteCharacters.length);
-                    for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
-                    }
-                    const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: mimeType });
-                    const url = window.URL.createObjectURL(blob);
+                    // Direct Data URI is more stable for tiny mock files
+                    const url = `data:${mimeType};base64,${base64}`;
 
                     const a = document.createElement('a');
                     a.style.display = 'none';
@@ -176,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${quality}.${extension}`;
                     document.body.appendChild(a);
                     a.click();
-                    window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
 
                     this.classList.add('success');
