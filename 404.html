@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>youtube donloder</title>
+    <!-- Modern Typography: Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for robust icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/png" href="logo.png">
+</head>
+
+<body>
+    <!-- Persistent background RGB glow effect -->
+    <div class="background-glow"></div>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <nav class="navbar glass">
+        <div class="logo">
+            <img src="logo.png" alt="Logo" class="logo-img">
+            youtube <span>donloder</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#" class="nav-link active" data-target="home">Home</a></li>
+            <li><a href="#" class="nav-link" data-target="about">About</a></li>
+        </ul>
+    </nav>
+
+    <main class="container">
+        <!-- Home / Downloader Section -->
+        <section id="home" class="page-section active">
+            <div class="hero">
+                <h1 class="glow-text">Download Videos <br>in High Quality</h1>
+                <p class="subtitle">Fast, free, and secure YouTube video and audio downloader.</p>
+
+                <div class="search-container glass glow-box">
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-link input-icon"></i>
+                        <input type="text" id="url-input" placeholder="Paste YouTube video link here...">
+                        <button id="paste-btn" class="icon-btn" title="Paste from clipboard"><i
+                                class="fa-solid fa-clipboard"></i></button>
+                    </div>
+                    <button id="fetch-btn" class="primary-btn glow-btn">
+                        <span>Get Video</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+                <!-- Error Message Container -->
+                <div id="error-message" class="error-msg hidden">
+                    <i class="fa-solid fa-circle-exclamation"></i> <span>Invalid YouTube URL. Please try again.</span>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading-state hidden">
+                <div class="spinner"></div>
+                <p>Fetching video details...</p>
+            </div>
+
+            <!-- Downloader Preview Section -->
+            <div id="downloader-result" class="downloader-card glass hidden">
+                <div class="result-content">
+                    <div class="thumbnail-container">
+                        <img id="video-thumbnail" src="" alt="Video Thumbnail">
+                        <div class="duration-badge"><i class="fa-regular fa-clock"></i> <span
+                                id="video-duration">00:00</span></div>
+                    </div>
+                    <div class="details">
+                        <h2 id="video-title" class="line-clamp">Video Title</h2>
+                        <div class="download-options">
+                            <h3><i class="fa-solid fa-video"></i> Download Video</h3>
+                            <div class="options-grid">
+                                <button class="download-btn quality-1080">
+                                    <div class="btn-info"><span>MP4</span><span class="badge">1080p</span></div>
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                                <button class="download-btn quality-720">
+                                    <div class="btn-info"><span>MP4</span><span class="badge">720p</span></div>
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                                <button class="download-btn quality-480">
+                                    <div class="btn-info"><span>MP4</span><span class="badge">480p</span></div>
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                            </div>
+                            <h3><i class="fa-solid fa-music"></i> Download Audio</h3>
+                            <div class="options-grid audio">
+                                <button class="download-btn quality-mp3">
+                                    <div class="btn-info"><span>MP3</span><span class="badge">320kbps</span></div>
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="features-section">
+                <div class="feature-card glass hover-glow">
+                    <div class="icon-wrapper"><i class="fa-solid fa-bolt"></i></div>
+                    <h3>Fast Downloads</h3>
+                    <p>Experience lightning-fast conversion and download speeds without limits.</p>
+                </div>
+                <div class="feature-card glass hover-glow">
+                    <div class="icon-wrapper"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Secure & Free</h3>
+                    <p>No registration required. 100% safe to use and completely free forever.</p>
+                </div>
+                <div class="feature-card glass hover-glow">
+                    <div class="icon-wrapper"><i class="fa-solid fa-mobile-screen"></i></div>
+                    <h3>Mobile Ready</h3>
+                    <p>Works perfectly on all your modern devices, anywhere you naturally go.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="page-section hidden">
+            <div class="about-container glass">
+                <h2 class="glow-text text-center">About youtube donloder</h2>
+                <div class="about-content">
+                    <div class="about-card">
+                        <h3><i class="fa-solid fa-wrench"></i> The Tool</h3>
+                        <p><strong>youtube donloder</strong> is a modern, fast, and secure web application designed to
+                            help you download your favorite YouTube videos in various formats and qualities including
+                            MP4 and MP3. Built with the latest web technologies, it offers a seamless and premium
+                            experience across desktop and mobile devices. We believe in providing a simple,
+                            user-friendly interface without the clutter of excessive ads or confusing redirects.</p>
+                    </div>
+
+                    <div class="about-card mt-4">
+                        <h3><i class="fa-solid fa-user-shield"></i> Privacy Policy</h3>
+                        <p>We value your privacy immensely. We <strong>do not store</strong> any of your downloaded
+                            files on our servers. The conversion and download process happens in real-time. We do not
+                            track your downloads, IP addresses, or share any personal information with third parties.
+                            Once the download is complete, the temporary file metadata is immediately purged from our
+                            active memory.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="glass-footer">
+        <p>made by efron in <span class="footer-glow">glow</span></p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
