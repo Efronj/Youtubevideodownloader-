@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sections.forEach(sec => {
                 if (sec.id === targetId) {
                     sec.classList.remove('hidden');
-                    // Small delay to allow display flow to apply before opacity transitions if active class handles opacity
+                    // Small delay to allow display flow to apply before opacity transitions
                     setTimeout(() => sec.classList.add('active'), 10);
                 } else {
                     sec.classList.remove('active');
@@ -112,7 +112,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // MOCKED API FETCH FOR DEMONSTRATION
         // In a real application, you would pass the URL to your backend
-        // e.g. /api/download?url=YOUR_URL
         const videoId = extractVideoId(url);
 
         // Simulate network latency (1.5 seconds)
@@ -125,10 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
             videoTitle.textContent = "How to Download Premium High Quality YouTube Videos (2026 Tutorial)";
             videoDuration.textContent = "10:24";
 
-            // If the maxresdefault thumbnail fails to load (some videos don't have 1080p thumbs), fallback to mqdefault
+            // If the maxresdefault thumbnail fails to load, fallback to mqdefault
             videoThumbnail.onerror = function () {
                 this.onerror = null;
-                this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`; // Medium quality, always exists
+                this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
             };
 
             // Show result
@@ -151,9 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.classList.add('success');
                 this.innerHTML = `<div class="btn-info"><span>Ready!</span></div><i class="fa-solid fa-check"></i>`;
 
-                // Note: Normally here you would trigger a real `window.open` or element download
-                // e.g., window.location.href = data.downloadUrl;
-
                 // 4. Reset button after 3 seconds
                 setTimeout(() => {
                     this.classList.remove('success');
@@ -163,22 +159,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             }, 2000);
         });
-        efronModal.classList.remove('hidden');
-        setTimeout(() => efronModal.classList.add('active'), 10);
     });
 
-    const closeFunc = () => {
-        efronModal.classList.remove('active');
-        setTimeout(() => efronModal.classList.add('hidden'), 300);
-    };
+    // Efron Popup Logic
+    const efronTrigger = document.getElementById('efron-trigger');
+    const efronModal = document.getElementById('efron-modal');
+    const closeModal = document.querySelector('.close-modal');
 
-    closeModal.addEventListener('click', closeFunc);
+    if (efronTrigger && efronModal) {
+        const openModal = () => {
+            efronModal.classList.remove('hidden');
+            setTimeout(() => efronModal.classList.add('active'), 10);
+        };
 
-    // Close on background click
-    efronModal.addEventListener('click', (e) => {
-        if (e.target === efronModal) {
-            closeFunc();
-        }
-    });
-}
-    });
+        const closeFunc = () => {
+            efronModal.classList.remove('active');
+            setTimeout(() => efronModal.classList.add('hidden'), 300);
+        };
+
+        efronTrigger.addEventListener('click', openModal);
+        closeModal.addEventListener('click', closeFunc);
+
+        // Close on background click
+        efronModal.addEventListener('click', (e) => {
+            if (e.target === efronModal) {
+                closeFunc();
+            }
+        });
+    }
+});
