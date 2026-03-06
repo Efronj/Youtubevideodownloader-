@@ -439,78 +439,91 @@ body {
     backdrop-filter: blur(10px);
 }
 
-/* --- Multi-Engine Dashboard Styles --- */
-.engine-tabs {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 4px;
-    border-radius: 12px;
+/* --- Premium Download Board V4.0 --- */
+.download-board {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: var(--card-radius);
     border: 1px solid var(--glass-border);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.engine-tab {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    padding: 0.5rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
+.board-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.board-header i {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.board-header h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.board-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+}
+
+.mini-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid var(--glass-border);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.links-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.download-link-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--btn-radius);
+    text-decoration: none;
+    color: var(--text-color);
     transition: var(--transition);
 }
 
-.engine-tab.active {
-    background: var(--primary-color);
-    color: white;
-    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+.download-link-btn:hover {
+    background: var(--glass-highlight);
+    border-color: var(--primary-color);
+    transform: translateX(5px);
 }
 
-.iframe-container-wrapper {
-    position: relative;
-    border-radius: var(--card-radius);
-    overflow: hidden;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--glass-border);
-    margin-top: 10px;
-    min-height: 350px;
-}
-
-.iframe-fallback {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.download-link-btn .btn-info {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
-    background: rgba(20, 20, 30, 0.95);
-    z-index: 5;
+    gap: 1rem;
+}
+
+.download-link-btn i {
+    color: var(--primary-color);
+}
+
+.board-error {
     text-align: center;
-    padding: 20px;
-    backdrop-filter: blur(10px);
-}
-
-.iframe-fallback i {
-    font-size: 3rem;
-    color: var(--error-color);
-    margin-bottom: 15px;
-}
-
-.iframe-fallback p {
-    color: var(--text-color);
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-.mini-btn {
-    padding: 10px 20px !important;
-    font-size: 0.9rem !important;
-    border-radius: 30px !important;
+    padding: 2rem;
+    color: var(--danger-color);
 }
 
 .engine-status {
@@ -521,6 +534,11 @@ body {
     display: flex;
     align-items: center;
     gap: 6px;
+    justify-content: center;
+}
+
+.fa-shield-check {
+    color: var(--success-color);
 }
 
 /* --- Mobile Fixes --- */

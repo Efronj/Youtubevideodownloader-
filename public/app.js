@@ -109,80 +109,97 @@ document.addEventListener('DOMContentLoaded', () => {
                 const thumbs = video.snippet.thumbnails;
                 videoThumbnail.src = (thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium).url;
 
-                // MULTI-ENGINE DOWNLOAD DASHBOARD
-                // We use Loader.to as the primary engine because it's the fastest and highest quality
+                // PREMIUM DOWNLOAD BOARD (V4.0)
                 downloadOptions.innerHTML = `
-                    <div class="engine-tabs">
-                        <button class="engine-tab active" data-engine="loader">High Speed</button>
-                        <button class="engine-tab" data-engine="y2mate">Ultra HD</button>
-                    </div>
-                    <div class="iframe-container-wrapper">
-                        <div id="iframe-fallback" class="iframe-fallback hidden">
-                            <i class="fa-solid fa-shield-halved"></i>
-                            <p>Loading taking too long? Browser security might be active.</p>
-                            <div class="fallback-actions">
-                                <a id="direct-btn" href="#" target="_blank" class="primary-btn glow-btn mini-btn">
-                                    <i class="fa-solid fa-up-right-from-square"></i> Open External Fix
-                                </a>
-                                <button id="retry-btn" class="secondary-btn mini-btn">
-                                    <i class="fa-solid fa-rotate-right"></i> Retry Engine
-                                </button>
-                            </div>
+                    <div id="download-board" class="download-board">
+                        <div class="board-header">
+                            <i class="fa-solid fa-cloud-arrow-down"></i>
+                            <h3>Select Download Quality</h3>
                         </div>
-                        <iframe id="dl-iframe" 
-                                src="https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4"
-                                style="width: 100%; height: 350px; border: none; background: transparent;"
-                                scrolling="yes"></iframe>
+                        <div id="board-loading" class="board-loading">
+                            <div class="mini-spinner"></div>
+                            <p>Generating direct links...</p>
+                        </div>
+                        <div id="links-grid" class="links-grid hidden">
+                            <!-- Links will be injected here -->
+                        </div>
+                        <div id="board-error" class="board-error hidden">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <p>API Limit reached. <a href="#" onclick="location.reload()">Retry?</a></p>
+                        </div>
                     </div>
-                    <p class="engine-status"><i class="fa-solid fa-circle-info"></i> Tip: Use "Open External Fix" if the engine doesn't appear.</p>
+                    <p class="engine-status"><i class="fa-solid fa-shield-check"></i> Direct Download Engine Active - No Iframes Used.</p>
                 `;
 
-                const iframe = document.getElementById('dl-iframe');
-                const fallback = document.getElementById('iframe-fallback');
-                const directBtn = document.getElementById('direct-btn');
-                const retryBtn = document.getElementById('retry-btn');
+                const linksGrid = document.getElementById('links-grid');
+                const boardLoading = document.getElementById('board-loading');
+                const boardError = document.getElementById('board-error');
 
-                const updateLinks = (engine) => {
-                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
-                    if (engine === 'loader') {
-                        const url = `https://loader.to/api/button/?url=${videoUrl}&f=mp4`;
-                        iframe.src = url;
-                        directBtn.href = url;
-                    } else {
-                        iframe.src = `https://y2mate.is/iframe/#${videoId}`;
-                        directBtn.href = `https://y2mate.is/en/${videoId}`;
+                async function fetchDirectLinks(vid) {
+                    try {
+                        const apiUrl = `https://vkrdownloader.org/server/?api_key=vkrdownloader&vkr=https://www.youtube.com/watch?v=${vid}`;
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+
+                        if (data && data.data && data.data.downloads) {
+                            const downloads = data.data.downloads;
+                            linksGrid.innerHTML = '';
+
+                            // Map of desired qualities
+                            const formats = [
+                                { label: 'Video 1080p', icon: 'fa-video', filter: (d) => d.format_id === '137' || d.ext === 'mp4' && d.quality === '1080p' },
+                                { label: 'Video 720p', icon: 'fa-video', filter: (d) => d.format_id === '22' || d.ext === 'mp4' && d.quality === '720p' },
+                                { label: 'Audio MP3', icon: 'fa-music', filter: (d) => d.ext === 'm4a' || d.ext === 'mp3' || d.format_id === '140' }
+                            ];
+
+                            formats.forEach(f => {
+                                const match = downloads.find(f.filter);
+                                if (match) {
+                                    const btn = document.createElement('a');
+                                    btn.href = match.url;
+                                    btn.target = '_blank';
+                                    btn.className = 'download-link-btn';
+                                    btn.innerHTML = `
+                                        <div class="btn-info">
+                                            <i class="fa-solid ${f.icon}"></i>
+                                            <span>${f.label}</span>
+                                        </div>
+                                        <i class="fa-solid fa-download"></i>
+                                    `;
+                                    linksGrid.appendChild(btn);
+                                }
+                            });
+
+                            // Fallback if specific formats not found - just show first 3
+                            if (linksGrid.children.length === 0) {
+                                downloads.slice(0, 3).forEach(d => {
+                                    const btn = document.createElement('a');
+                                    btn.href = d.url;
+                                    btn.target = '_blank';
+                                    btn.className = 'download-link-btn';
+                                    btn.innerHTML = `
+                                        <div class="btn-info">
+                                            <i class="fa-solid fa-file-arrow-down"></i>
+                                            <span>${d.ext.toUpperCase()} ${d.quality || ''}</span>
+                                        </div>
+                                        <i class="fa-solid fa-download"></i>
+                                    `;
+                                    linksGrid.appendChild(btn);
+                                });
+                            }
+
+                            boardLoading.classList.add('hidden');
+                            linksGrid.classList.remove('hidden');
+                        } else {
+                            throw new Error('Invalid API Response');
+                        }
+                    } catch (err) {
+                        boardLoading.classList.add('hidden');
+                        boardError.classList.remove('hidden');
                     }
-                    fallback.classList.add('hidden'); // Reset fallback on switch
-                };
+                }
 
-                // Tab Switching Logic
-                const tabs = downloadOptions.querySelectorAll('.engine-tab');
-                tabs.forEach(tab => {
-                    tab.onclick = () => {
-                        tabs.forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-                        updateLinks(tab.getAttribute('data-engine'));
-                    };
-                });
-
-                retryBtn.onclick = () => {
-                    const activeTab = downloadOptions.querySelector('.engine-tab.active');
-                    updateLinks(activeTab.getAttribute('data-engine'));
-                };
-
-                // Initial Direct Link
-                directBtn.href = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
-
-                // Smart Fallback: Only show if iframe hasn't loaded after 6 seconds
-                let loadTimer = setTimeout(() => {
-                    fallback.classList.remove('hidden');
-                }, 6000);
-
-                iframe.onload = () => {
-                    clearTimeout(loadTimer);
-                    fallback.classList.add('hidden');
-                };
-
+                fetchDirectLinks(videoId);
                 downloaderResult.classList.remove('hidden');
             } else {
                 errorMsg.classList.remove('hidden');
