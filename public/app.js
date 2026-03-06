@@ -107,16 +107,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 const thumbs = video.snippet.thumbnails;
                 videoThumbnail.src = (thumbs.maxres || thumbs.standard || thumbs.high || thumbs.medium).url;
 
-                // INJECT NEW-GENERATION MULTI-SOURCE DOWNLOADER (Reliable and Fast)
+                // MULTI-ENGINE DOWNLOAD DASHBOARD
+                // We use Loader.to as the primary engine because it's the fastest and highest quality
                 downloadOptions.innerHTML = `
-                    <h3><i class="fa-solid fa-download"></i> Ready to Download</h3>
-                    <div style="margin-top: 1rem; border-radius: 20px; overflow: hidden; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); padding: 5px;">
+                    <div class="engine-tabs">
+                        <button class="engine-tab active" data-engine="loader">High Speed</button>
+                        <button class="engine-tab" data-engine="y2mate">Ultra HD</button>
+                    </div>
+                    <div class="iframe-container-wrapper">
                         <iframe id="dl-iframe" 
-                                src="https://y2mate.is/iframe/#${videoId}"
-                                style="width: 100%; height: 450px; border: none; background: #000;"
+                                src="https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4"
+                                style="width: 100%; height: 350px; border: none; background: transparent;"
                                 scrolling="yes"></iframe>
                     </div>
+                    <p class="engine-status"><i class="fa-solid fa-circle-info"></i> All formats (MP3/MP4 4K) supported.</p>
                 `;
+
+                // Add Tab Switching Logic
+                const tabs = downloadOptions.querySelectorAll('.engine-tab');
+                tabs.forEach(tab => {
+                    tab.onclick = () => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        const engine = tab.getAttribute('data-engine');
+                        const iframe = document.getElementById('dl-iframe');
+                        if (engine === 'loader') {
+                            iframe.src = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
+                        } else {
+                            iframe.src = `https://y2mate.is/iframe/#${videoId}`;
+                        }
+                    };
+                });
 
                 downloaderResult.classList.remove('hidden');
             } else {
