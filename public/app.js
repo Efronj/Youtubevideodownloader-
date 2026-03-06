@@ -117,13 +117,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="engine-tab" data-engine="y2mate">Ultra HD</button>
                     </div>
                     <div class="iframe-container-wrapper">
+                        <div id="iframe-fallback" class="iframe-fallback hidden">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <p>Engine blocked by browser security.</p>
+                            <a id="direct-btn" href="#" target="_blank" class="primary-btn glow-btn mini-btn">
+                                <i class="fa-solid fa-up-right-from-square"></i> Open Fix Connection
+                            </a>
+                        </div>
                         <iframe id="dl-iframe" 
                                 src="https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4"
                                 style="width: 100%; height: 350px; border: none; background: transparent;"
                                 scrolling="yes"></iframe>
                     </div>
-                    <p class="engine-status"><i class="fa-solid fa-circle-info"></i> All formats (MP3/MP4 4K) supported.</p>
+                    <p class="engine-status"><i class="fa-solid fa-circle-info"></i> If screen is grey, click "Open Fix Connection".</p>
                 `;
+
+                const iframe = document.getElementById('dl-iframe');
+                const fallback = document.getElementById('iframe-fallback');
+                const directBtn = document.getElementById('direct-btn');
 
                 // Add Tab Switching Logic
                 const tabs = downloadOptions.querySelectorAll('.engine-tab');
@@ -132,14 +143,26 @@ document.addEventListener('DOMContentLoaded', () => {
                         tabs.forEach(t => t.classList.remove('active'));
                         tab.classList.add('active');
                         const engine = tab.getAttribute('data-engine');
-                        const iframe = document.getElementById('dl-iframe');
+
                         if (engine === 'loader') {
-                            iframe.src = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
+                            const url = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
+                            iframe.src = url;
+                            directBtn.href = url;
                         } else {
-                            iframe.src = `https://y2mate.is/iframe/#${videoId}`;
+                            const url = `https://y2mate.is/iframe/#${videoId}`;
+                            iframe.src = url;
+                            directBtn.href = `https://y2mate.is/en/${videoId}`;
                         }
                     };
                 });
+
+                // Set initial direct link
+                directBtn.href = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
+
+                // Handle loading errors/refusal (Note: Most browsers block X-Frame-Options detection, so we show it as a helper)
+                setTimeout(() => {
+                    fallback.classList.remove('hidden');
+                }, 3000);
 
                 downloaderResult.classList.remove('hidden');
             } else {
