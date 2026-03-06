@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadOptions = document.querySelector('.download-options');
 
     const youtubeRegex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.be|youtube\.com|m\.youtube\.com|youtube\.com\/shorts\/)\/.+$/;
-    const API_KEY = "AIzaSyA-v0Jh4AI2I_rhzMro8wuBKOlNk18teqE";
+    const API_KEY = "AIzaSyD1QrvhlcjGT8PioVApW6Xq9vmLd3WY8Dk";
 
     pasteBtn.addEventListener('click', async () => {
         try {
