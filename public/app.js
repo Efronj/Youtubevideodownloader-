@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("YouTube Downloader v2.1 Active - Live API Mode");
+    console.log("YouTube Downloader v2.2 Active - 100% Real API Enforcement");
     // Navigation Logic
     const navLinks = document.querySelectorAll('.nav-link');
     const sections = document.querySelectorAll('.page-section');
