@@ -118,51 +118,70 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="iframe-container-wrapper">
                         <div id="iframe-fallback" class="iframe-fallback hidden">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
-                            <p>Engine blocked by browser security.</p>
-                            <a id="direct-btn" href="#" target="_blank" class="primary-btn glow-btn mini-btn">
-                                <i class="fa-solid fa-up-right-from-square"></i> Open Fix Connection
-                            </a>
+                            <i class="fa-solid fa-shield-halved"></i>
+                            <p>Loading taking too long? Browser security might be active.</p>
+                            <div class="fallback-actions">
+                                <a id="direct-btn" href="#" target="_blank" class="primary-btn glow-btn mini-btn">
+                                    <i class="fa-solid fa-up-right-from-square"></i> Open External Fix
+                                </a>
+                                <button id="retry-btn" class="secondary-btn mini-btn">
+                                    <i class="fa-solid fa-rotate-right"></i> Retry Engine
+                                </button>
+                            </div>
                         </div>
                         <iframe id="dl-iframe" 
                                 src="https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4"
                                 style="width: 100%; height: 350px; border: none; background: transparent;"
                                 scrolling="yes"></iframe>
                     </div>
-                    <p class="engine-status"><i class="fa-solid fa-circle-info"></i> If screen is grey, click "Open Fix Connection".</p>
+                    <p class="engine-status"><i class="fa-solid fa-circle-info"></i> Tip: Use "Open External Fix" if the engine doesn't appear.</p>
                 `;
 
                 const iframe = document.getElementById('dl-iframe');
                 const fallback = document.getElementById('iframe-fallback');
                 const directBtn = document.getElementById('direct-btn');
+                const retryBtn = document.getElementById('retry-btn');
 
-                // Add Tab Switching Logic
+                const updateLinks = (engine) => {
+                    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+                    if (engine === 'loader') {
+                        const url = `https://loader.to/api/button/?url=${videoUrl}&f=mp4`;
+                        iframe.src = url;
+                        directBtn.href = url;
+                    } else {
+                        iframe.src = `https://y2mate.is/iframe/#${videoId}`;
+                        directBtn.href = `https://y2mate.is/en/${videoId}`;
+                    }
+                    fallback.classList.add('hidden'); // Reset fallback on switch
+                };
+
+                // Tab Switching Logic
                 const tabs = downloadOptions.querySelectorAll('.engine-tab');
                 tabs.forEach(tab => {
                     tab.onclick = () => {
                         tabs.forEach(t => t.classList.remove('active'));
                         tab.classList.add('active');
-                        const engine = tab.getAttribute('data-engine');
-
-                        if (engine === 'loader') {
-                            const url = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
-                            iframe.src = url;
-                            directBtn.href = url;
-                        } else {
-                            const url = `https://y2mate.is/iframe/#${videoId}`;
-                            iframe.src = url;
-                            directBtn.href = `https://y2mate.is/en/${videoId}`;
-                        }
+                        updateLinks(tab.getAttribute('data-engine'));
                     };
                 });
 
-                // Set initial direct link
+                retryBtn.onclick = () => {
+                    const activeTab = downloadOptions.querySelector('.engine-tab.active');
+                    updateLinks(activeTab.getAttribute('data-engine'));
+                };
+
+                // Initial Direct Link
                 directBtn.href = `https://loader.to/api/button/?url=https://www.youtube.com/watch?v=${videoId}&f=mp4`;
 
-                // Handle loading errors/refusal (Note: Most browsers block X-Frame-Options detection, so we show it as a helper)
-                setTimeout(() => {
+                // Smart Fallback: Only show if iframe hasn't loaded after 6 seconds
+                let loadTimer = setTimeout(() => {
                     fallback.classList.remove('hidden');
-                }, 3000);
+                }, 6000);
+
+                iframe.onload = () => {
+                    clearTimeout(loadTimer);
+                    fallback.classList.add('hidden');
+                };
 
                 downloaderResult.classList.remove('hidden');
             } else {
